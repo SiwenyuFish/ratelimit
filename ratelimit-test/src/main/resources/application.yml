@@ -1,0 +1,14 @@
+spring:
+  data:
+    redis:
+      host: 47.120.26.35
+      port: 6379
+      connect-timeout: 5000
+      database: 2
+      password: 297710
+
+ratelimit:
+  default-period: 60
+  default-unit: SECONDS
+  default-max-count: 100
+  algorithm: default

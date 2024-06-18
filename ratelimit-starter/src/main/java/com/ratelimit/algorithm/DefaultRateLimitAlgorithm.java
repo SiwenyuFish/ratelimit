@@ -19,28 +19,21 @@ public class DefaultRateLimitAlgorithm implements RateLimitAlgorithm{
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
 
+
     @Override
     public boolean isAllowed(String key, int period, TimeUnit unit, int maxCount) {
-        String redisKey = "ratelimit:" + key;
+        long currentTimeMillis = System.currentTimeMillis();
+        long expireMillis = unit.toMillis(period);
+        String redisKey = key + ":" + (currentTimeMillis / expireMillis);
 
-        Integer count = null;
-        try {
-            count = (Integer) redisTemplate.opsForValue().get(redisKey);
-        } catch (Exception e) {
-            log.info("....");
+        // Increment the counter and set expiry if it's a new key
+        Long count = redisTemplate.opsForValue().increment(redisKey, 1);
+
+        if (count != null && count == 1) {
+            redisTemplate.expire(redisKey, expireMillis, TimeUnit.MILLISECONDS);
         }
 
-        if (count == null) {
-            redisTemplate.opsForValue().set(redisKey, 1, period, unit);
-            return true;
-        }
-
-        if (count < maxCount) {
-            redisTemplate.opsForValue().increment(redisKey);
-            return true;
-        }
-
-        return false;
+        return count != null && count <= maxCount;
     }
 
 }
