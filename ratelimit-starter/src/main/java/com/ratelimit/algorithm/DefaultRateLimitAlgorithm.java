@@ -26,7 +26,7 @@ public class DefaultRateLimitAlgorithm implements RateLimitAlgorithm{
         long expireMillis = unit.toMillis(period);
         String redisKey = key + ":" + (currentTimeMillis / expireMillis);
 
-        // Increment the counter and set expiry if it's a new key
+
         Long count = redisTemplate.opsForValue().increment(redisKey, 1);
 
         if (count != null && count == 1) {
